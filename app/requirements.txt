@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+jinja2
+paho-mqtt
+websockets
+motor
+fastapi-mqtt

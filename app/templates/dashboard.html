@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Escape Room Control</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; background-color: #222; color: white; padding-top: 50px;}
+        .status-box {
+            border: 2px solid #555;
+            padding: 20px;
+            display: inline-block;
+            border-radius: 10px;
+            width: 300px;
+        }
+        .pending { background-color: #b91c1c; } /* Rojo */
+        .success { background-color: #15803d; animation: parpadeo 1s infinite; } /* Verde */
+
+        @keyframes parpadeo {
+            0% { opacity: 1; }
+            50% { opacity: 0.8; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <h1>Sala de Control: Cortocircuito</h1>
+
+    <div id="cajaEstado" class="status-box pending">
+        <h2 id="textoEstado">🔒 BLOQUEADO</h2>
+    </div>
+
+    <script>
+        // Conexión WebSocket al servidor FastAPI
+        // Detecta automáticamente si es ws:// o wss://
+        var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
+        var ws_path = ws_scheme + "://" + window.location.host + "/ws";
+
+        var ws = new WebSocket(ws_path);
+
+        ws.onmessage = function(event) {
+            console.log("Mensaje recibido: " + event.data);
+
+            if (event.data === "PUZZLE_RESUELTO") {
+                document.getElementById("cajaEstado").className = "status-box success";
+                document.getElementById("textoEstado").innerText = "🔓 ¡ABIERTO!";
+
+                // Opcional: Reproducir sonido en el ordenador del Game Master
+                // var audio = new Audio('/static/alert.mp3');
+                // audio.play();
+            }
+        };
+
+        ws.onopen = function() {
+            console.log("Conectado al sistema en tiempo real.");
+        };
+    </script>
+</body>
+</html>
