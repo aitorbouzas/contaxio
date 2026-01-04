@@ -1,8 +1,9 @@
 import json
 
-from config import MQTT_TOPICS, LOGS_TOPIC
+from config import MQTT_TOPICS, LOGS_TOPIC, CMD_SUBTOPIC
 from dependencies import mqtt_app, logs_db, ws_manager
-from models import LogEntry
+from models import LogEntry, Game
+
 
 def register_mqtt_handlers():
     @mqtt_app.on_connect()
@@ -34,3 +35,16 @@ def register_mqtt_handlers():
         #     asyncio.run_coroutine_threadsafe(
         #         ws_manager.broadcast({"topic": topic, "status": PuzzleStatus.SOLVED}), loop
         #     )
+
+class MQTTHandler:
+    @staticmethod
+    def status_all_puzzles(game: Game):
+        for puzzle in game.puzzles.values():
+            topic = f"{puzzle.topic}/{CMD_SUBTOPIC}"
+            mqtt_app.client.publish(topic, "STATUS")
+
+    @staticmethod
+    def deactivate_all_puzzles(game: Game):
+        for puzzle in game.puzzles.values():
+            topic = f"{puzzle.topic}/{CMD_SUBTOPIC}"
+            mqtt_app.client.publish(topic, "INACTIVE")

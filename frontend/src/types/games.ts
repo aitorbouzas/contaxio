@@ -1,6 +1,6 @@
 // src/types/game.ts
 
-export type PuzzleStatus = "IN_PROGRESS" | "SOLVED" | "FAILED" | "SABOTAGED" | "IDLE";
+export type PuzzleStatus = "INACTIVE" | "STARTING_GAME" | "IDLE" | "ACTIVE" | "SOLVED" | "SABOTAGED";
 
 export interface Try {
   try_id: string;

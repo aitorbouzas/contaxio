@@ -1,11 +1,13 @@
 import json
 from datetime import datetime
-from typing import Any, Optional
+from typing import Optional
 
 from fastapi import APIRouter, HTTPException
 
-from dependencies import games_db, ws_manager
+from config import CMD_SUBTOPIC
+from dependencies import mqtt_app, games_db, ws_manager
 from models import Game, GameConfig, Puzzle
+from mqtt import MQTTHandler
 from schemas import GameCreateRequest
 
 router = APIRouter(prefix="/games", tags=["Games"])
@@ -48,8 +50,9 @@ async def create_game(request: GameCreateRequest):
         players=[]
     )
 
-    await games_db.insert_one(new_game.model_dump(mode='json'))
+    await games_db.insert_one(new_game.to_mongo())
     await broadcast_game_state(new_game)
+    MQTTHandler.status_all_puzzles(new_game)
     return new_game
 
 
@@ -71,6 +74,9 @@ async def stop_game():
     game_obj = Game(**active_game_data)
 
     await broadcast_game_state(game_obj)
+
+    game = Game(**active_game_data)
+    MQTTHandler.deactivate_all_puzzles(game)
     return {"message": "Ended game", "game_id": game_obj.game_id}
 
 
@@ -83,3 +89,16 @@ async def get_current_game():
         return None
 
     return Game(**game_data)
+
+
+@router.post("/refresh-status")
+async def request_devices_status():
+    """
+    Solicita a todos los dispositivos IoT de la partida que reporten su estado actual.
+    """
+    game_data = await games_db.find_one({"end_time": None})
+    if game_data:
+        game = Game(**game_data)
+        MQTTHandler.status_all_puzzles(game)
+
+    return {"message": "Status requested"}

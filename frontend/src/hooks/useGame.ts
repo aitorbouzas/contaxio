@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { Game } from "@/types/game";
+import { Game, PuzzleStatus } from "@/types/games";
 
 const BACKEND_URL = "http://localhost:8000";
 const WS_URL = "ws://localhost:8000/ws";
@@ -19,6 +19,8 @@ export function useGame() {
       if (res.ok) {
         const data = await res.json();
         setGame(data);
+        // Pedir status al iniciar para sincronizar
+        await fetch(`${BACKEND_URL}/games/refresh-status`, { method: "POST" });
       }
     } catch (error) {
       console.error("Error fetching game:", error);
@@ -33,25 +35,24 @@ export function useGame() {
     ws.current = new WebSocket(WS_URL);
 
     ws.current.onopen = () => {
-      console.log("✅ WS Conectado");
       setIsConnected(true);
     };
 
     ws.current.onclose = () => {
-      console.log("❌ WS Desconectado");
       setIsConnected(false);
     };
 
     ws.current.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-
         if (data.type === "GAME_STATE_UPDATE") {
-          console.log("🔄 Actualización recibida:", data.payload);
           setGame(data.payload);
         }
+        if (data.type === "mqtt_message") {
+          handleMqttMessage(data.topic, data.payload);
+        }
       } catch (e) {
-        console.error("Error parseando WS:", e);
+        console.error("Error parsing WS:", e);
       }
     };
 
@@ -60,6 +61,44 @@ export function useGame() {
     };
   }, []);
 
+  const handleMqttMessage = (topic: string, payload: string) => {
+    setGame((prevGame) => {
+      if (!prevGame) return null;
+
+      const newPuzzles = { ...prevGame.puzzles };
+      let hasChanges = false;
+
+      for (const [key, puzzle] of Object.entries(newPuzzles)) {
+        if (topic === `${puzzle.topic}/status`) {
+          let newStatus: PuzzleStatus = puzzle.status;
+
+          if (payload === "ACTIVE") newStatus = "ACTIVE";
+          else if (payload === "INACTIVE") newStatus = "INACTIVE";
+          else if (payload === "STARTING_GAME") newStatus = "STARTING_GAME";
+          else if (payload === "SABOTAGED") newStatus = "SABOTAGED";
+          else if (payload === "SOLVED") newStatus = "SOLVED";
+          else if (payload === "IDLE") newStatus = "IDLE";
+
+          if (newStatus !== puzzle.status) {
+            newPuzzles[key] = {
+              ...puzzle,
+              status: newStatus
+            };
+            hasChanges = true;
+          }
+        }
+      }
+
+      if (!hasChanges) return prevGame;
+
+      return {
+        ...prevGame,
+        puzzles: newPuzzles
+      };
+    });
+  };
+
+  // ... createGame y stopGame se quedan igual ...
   const createGame = async (players: number, impostors: number) => {
     const res = await fetch(`${BACKEND_URL}/games/create`, {
       method: "POST",

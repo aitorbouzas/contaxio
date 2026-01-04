@@ -6,9 +6,13 @@ MQTT_BROKER = os.getenv("MQTT_BROKER", "mqtt")
 MQTT_PORT = os.getenv("MQTT_PORT", 1883)
 LOGS_TOPIC = "sala/logs"
 PUZZLES_TOPIC = "sala/puzzles"
+CMD_SUBTOPIC = "cmd"
 MQTT_TOPICS = [LOGS_TOPIC, f"{PUZZLES_TOPIC}/#"]
 
 class PuzzleStatus(Enum):
-    NOT_STARTED = "NOT_STARTED"
-    STARTED = "STARTED"
+    INACTIVE = "INACTIVE"
+    STARTING_GAME = "STARTING_GAME"
+    IDLE = "IDLE"
+    ACTIVE = "ACTIVE"
     SOLVED = "SOLVED"
+    SABOTAGED = "SABOTAGED"

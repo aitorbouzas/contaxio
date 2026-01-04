@@ -1,5 +1,7 @@
 // src/components/ActiveGame.tsx
-import {Game} from "@/types/games";
+import { Game } from "@/types/games";
+import { LiveTimer } from "@/components/LiveTimer";
+import {PuzzleCard} from "@/components/PuzzleCard";
 
 interface Props {
   game: Game;
@@ -9,59 +11,44 @@ interface Props {
 export function ActiveGame({ game, onStop }: Props) {
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center bg-white p-4 rounded-lg shadow">
-        <div>
-          <h2 className="text-xl font-bold text-green-600 animate-pulse">● JUEGO EN CURSO</h2>
-          <p className="text-sm text-gray-500">ID: {game.game_id.slice(0, 8)}...</p>
+      {/* Header Principal */}
+      <div className="flex flex-col md:flex-row justify-between items-center bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+        <div className="mb-4 md:mb-0">
+          <div className="flex items-center space-x-3">
+            <span className="relative flex h-4 w-4">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-4 w-4 bg-green-500"></span>
+            </span>
+            <h2 className="text-2xl font-bold text-gray-800">Misión en Curso</h2>
+          </div>
+          <p className="text-sm text-gray-500 mt-1 font-mono">ID: {game.game_id.slice(0, 8)}</p>
         </div>
-        <div className="text-right">
-          <p className="text-2xl font-mono font-bold">{game.duration_seconds}s</p>
-          <button
-            onClick={onStop}
-            className="mt-2 bg-red-100 text-red-700 px-3 py-1 rounded hover:bg-red-200 text-sm font-bold border border-red-200"
-          >
-            ABORTAR MISIÓN
-          </button>
+
+        <div className="text-center md:text-right">
+          <div className="text-5xl font-mono font-bold text-gray-900 tracking-tighter">
+            <LiveTimer startTime={game.start_time} />
+          </div>
+          <div className="mt-3">
+            <button
+              onClick={onStop}
+              className="bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 px-4 py-2 rounded-lg text-sm font-bold transition-colors"
+            >
+              TERMINAR PARTIDA
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Grid de Puzzles */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {Object.entries(game.puzzles).map(([key, puzzle]) => (
-          <div key={key} className={`p-4 rounded-lg border-2 ${
-            puzzle.status === 'SOLVED' ? 'border-green-500 bg-green-50' : 
-            puzzle.status === 'FAILED' ? 'border-red-500 bg-red-50' :
-            puzzle.status === 'SABOTAGED' ? 'border-purple-500 bg-purple-50' :
-            'border-gray-200 bg-white'
-          }`}>
-            <div className="flex justify-between items-start">
-              <h3 className="font-bold text-lg">{puzzle.display_name}</h3>
-              <span className={`px-2 py-0.5 rounded text-xs font-bold text-white ${
-                 puzzle.status === 'SOLVED' ? 'bg-green-500' : 
-                 puzzle.status === 'FAILED' ? 'bg-red-500' :
-                 puzzle.status === 'SABOTAGED' ? 'bg-purple-500' :
-                 'bg-gray-400'
-              }`}>
-                {puzzle.status}
-              </span>
-            </div>
-
-            <div className="mt-4">
-              <p className="text-sm text-gray-600">Intentos: {puzzle.tries.length}</p>
-              {puzzle.tries.length > 0 && (
-                <p className="text-xs text-gray-400 mt-1">
-                  Último: {puzzle.tries[puzzle.tries.length - 1].outcome}
-                </p>
-              )}
-            </div>
-          </div>
+          <PuzzleCard key={key} puzzle={puzzle} />
         ))}
       </div>
 
-      {/* Lista de Jugadores (Debug) */}
-      <div className="bg-gray-50 p-4 rounded text-xs font-mono text-gray-500">
-        Configuración: {game.config.total_players} Jugadores / {game.config.total_impostors} Impostores
+      <div className="bg-gray-100 border border-gray-200 p-3 rounded-lg text-center">
+        <p className="text-xs text-gray-500 font-mono">
+          CONFIG: {game.config.total_players} JUGADORES | {game.config.total_impostors} IMPOSTORES | DIFICULTAD {game.config.difficulty}
+        </p>
       </div>
     </div>
   );
