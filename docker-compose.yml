@@ -1,4 +1,5 @@
-version: '3.8'
+volumes:
+  mongo-data: {}
 
 services:
   mqtt:
@@ -8,7 +9,7 @@ services:
       - "1883:1883" # ESP32 and Backend
       - "9001:9001" # WebSockets
     volumes:
-      - ./mosquitto/config:/mosquitto/config-
+      - ./mosquitto/config:/mosquitto/config
       - ./mosquitto/data:/mosquitto/data
       - ./mosquitto/log:/mosquitto/log
   backend:
@@ -29,7 +30,7 @@ services:
     ports:
       - "27017:27017"
     volumes:
-      - ./mongo_data:/data/db
+      - "mongo-data:/data/db"
 
   mongo-express:
     image: mongo-express

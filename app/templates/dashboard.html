@@ -1,57 +1,118 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <title>Escape Room Control</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contaxio Dashboard</title>
     <style>
-        body { font-family: sans-serif; text-align: center; background-color: #222; color: white; padding-top: 50px;}
-        .status-box {
-            border: 2px solid #555;
-            padding: 20px;
-            display: inline-block;
-            border-radius: 10px;
-            width: 300px;
-        }
-        .pending { background-color: #b91c1c; } /* Rojo */
-        .success { background-color: #15803d; animation: parpadeo 1s infinite; } /* Verde */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; background-color: #f0f2f5; }
+        h1 { color: #333; }
 
-        @keyframes parpadeo {
-            0% { opacity: 1; }
-            50% { opacity: 0.8; }
-            100% { opacity: 1; }
+        /* Estilo del contenedor de logs */
+        #log-container {
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            height: 400px;
+            overflow-y: auto; /* Scroll vertical */
+            padding: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            font-family: monospace; /* Fuente tipo código */
         }
+
+        .log-entry {
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+        }
+
+        .badge {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            margin-right: 10px;
+            color: white;
+            font-weight: bold;
+        }
+
+        .badge-topic { background-color: #007bff; }
+        .message { color: #333; }
+        .timestamp { color: #999; font-size: 0.8em; margin-right: 10px;}
     </style>
 </head>
 <body>
-    <h1>Sala de Control: Cortocircuito</h1>
 
-    <div id="cajaEstado" class="status-box pending">
-        <h2 id="textoEstado">🔒 BLOQUEADO</h2>
+    <h1>🧩 Contaxio Control Center</h1>
+    <p>Estado del sistema en tiempo real:</p>
+
+    <div id="log-container">
+        <div style="color: #aaa; text-align: center; padding: 20px;">Esperando datos...</div>
     </div>
 
     <script>
-        // Conexión WebSocket al servidor FastAPI
-        // Detecta automáticamente si es ws:// o wss://
-        var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
-        var ws_path = ws_scheme + "://" + window.location.host + "/ws";
+        // 1. Configuración del WebSocket
+        const ws_protocol = window.location.protocol === "https:" ? "wss" : "ws";
+        const ws_url = ws_protocol + "://" + window.location.host + "/ws";
+        const ws = new WebSocket(ws_url);
 
-        var ws = new WebSocket(ws_path);
+        // Referencia al contenedor HTML
+        const container = document.getElementById('log-container');
+
+        ws.onopen = function() {
+            console.log("✅ WebSocket Conectado exitosamente");
+            // Quitamos el mensaje de "Esperando datos"
+            container.innerHTML = "";
+            addLogToScreen("SYSTEM", "Conexión establecida con el Backend");
+        };
 
         ws.onmessage = function(event) {
-            console.log("Mensaje recibido: " + event.data);
+            // DEBUG: Esto imprimirá en la consola lo que llega crudo
+            console.log("📨 WS Raw Data:", event.data);
 
-            if (event.data === "PUZZLE_RESUELTO") {
-                document.getElementById("cajaEstado").className = "status-box success";
-                document.getElementById("textoEstado").innerText = "🔓 ¡ABIERTO!";
+            try {
+                const data = JSON.parse(event.data);
 
-                // Opcional: Reproducir sonido en el ordenador del Game Master
-                // var audio = new Audio('/static/alert.mp3');
-                // audio.play();
+                // DEBUG: Verificamos el objeto parseado
+                console.log("🔍 Objeto JSON:", data);
+
+                // Lógica de visualización
+                // Si tu backend envía 'payload', úsalo. Si envía 'message', cámbialo aquí.
+                if (data.topic && data.payload) {
+                    addLogToScreen(data.topic, data.payload);
+                } else if (data.topic && data.message) {
+                    addLogToScreen(data.topic, data.message);
+                } else {
+                    console.warn("⚠️ El JSON no tiene la estructura esperada (topic/payload)", data);
+                    addLogToScreen("UNKNOWN", JSON.stringify(data));
+                }
+
+            } catch (e) {
+                console.error("💥 Error parseando JSON:", e);
             }
         };
 
-        ws.onopen = function() {
-            console.log("Conectado al sistema en tiempo real.");
+        ws.onclose = function() {
+            console.log("❌ WebSocket desconectado");
+            addLogToScreen("SYSTEM", "Conexión perdida...");
         };
+
+        function addLogToScreen(topic, message) {
+            const now = new Date().toLocaleTimeString();
+
+            const div = document.createElement('div');
+            div.className = 'log-entry';
+
+            // HTML Template string para insertar
+            div.innerHTML = `
+                <span class="timestamp">[${now}]</span>
+                <span class="badge badge-topic">${topic}</span>
+                <span class="message">${message}</span>
+            `;
+
+            // Insertar al principio (lo más nuevo arriba)
+            container.insertBefore(div, container.firstChild);
+        }
     </script>
 </body>
 </html>
