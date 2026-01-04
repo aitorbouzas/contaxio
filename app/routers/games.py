@@ -1,6 +1,6 @@
 import json
 from datetime import datetime
-from typing import Any
+from typing import Any, Optional
 
 from fastapi import APIRouter, HTTPException
 
@@ -74,7 +74,7 @@ async def stop_game():
     return {"message": "Ended game", "game_id": game_obj.game_id}
 
 
-@router.get("/current", response_model=Game)
+@router.get("/current", response_model=Optional[Game])
 async def get_current_game():
     """Endpoint para que el Frontend sepa el estado al cargar la página (F5)"""
     game_data = await games_db.find_one({"end_time": None})

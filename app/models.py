@@ -78,5 +78,6 @@ class Game(BaseModel):
         end = self.end_time if self.end_time else datetime.now()
         return int((end - self.start_time).total_seconds())
 
+    @computed_field
     def active(self) -> bool:
         return self.end_time is None
