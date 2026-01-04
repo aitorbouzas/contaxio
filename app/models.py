@@ -59,8 +59,24 @@ class Player(BaseModel):
     impostor: bool = False
 
 
+class GameConfig(BaseModel):
+    total_players: int
+    total_impostors: int
+    difficulty: str = "NORMAL"
+
+
 class Game(BaseModel):
     game_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    active: bool = False
+    start_time: datetime = Field(default_factory=datetime.now)
+    end_time: Optional[datetime] = None
+    config: GameConfig
     puzzles: Dict[str, Puzzle] = {}
-    players: List[Player]
+    players: List[Player] = []
+
+    @computed_field
+    def duration_seconds(self) -> int:
+        end = self.end_time if self.end_time else datetime.now()
+        return int((end - self.start_time).total_seconds())
+
+    def active(self) -> bool:
+        return self.end_time is None

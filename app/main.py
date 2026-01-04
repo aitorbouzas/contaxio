@@ -3,9 +3,11 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from dependencies import ws_manager, mqtt_app
 from mqtt import register_mqtt_handlers
+from routers import games
 
 templates = Jinja2Templates(directory="templates")
 app = FastAPI()
+app.include_router(games.router)
 register_mqtt_handlers()
 mqtt_app.init_app(app)
 
@@ -18,7 +20,6 @@ async def websocket_endpoint(websocket: WebSocket):
     await ws_manager.connect(websocket)
     try:
         while True:
-            data = await websocket.receive_text()
-            # TODO: Lógica de recepción WS
+            await websocket.receive_text()
     except WebSocketDisconnect:
         ws_manager.disconnect(websocket)
