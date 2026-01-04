@@ -98,18 +98,34 @@ export function useGame() {
     });
   };
 
-  // ... createGame y stopGame se quedan igual ...
-  const createGame = async (players: number, impostors: number) => {
-    const res = await fetch(`${BACKEND_URL}/games/create`, {
+  const createLobby = async () => {
+    setLoading(true);
+    await fetch(`${BACKEND_URL}/games/lobby`, { method: "POST" });
+    setLoading(false);
+  };
+
+  const startGame = async (impostors: number) => {
+    await fetch(`${BACKEND_URL}/games/start`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ players, impostors }),
+      body: JSON.stringify({ impostors_count: impostors }),
     });
-    return res.ok;
   };
 
   const stopGame = async () => {
-    await fetch(`${BACKEND_URL}/games/stop`, { method: "POST" });
+    await fetch(`${BACKEND_URL}/games/cancel`, { method: "POST" });
+    setGame(null);
+  };
+  const addSimulatedPlayer = async () => {
+    await fetch(`${BACKEND_URL}/games/debug/add-player`, { method: "POST" });
+  };
+
+  const controlPuzzle = async (puzzleKey: string, action: string) => {
+    await fetch(`${BACKEND_URL}/games/puzzles/${puzzleKey}/control`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action }),
+    });
   };
 
   const isActive = game !== null && game.end_time === null;
@@ -119,7 +135,10 @@ export function useGame() {
     loading,
     isConnected,
     isActive,
-    createGame,
+    createLobby,
+    startGame,
     stopGame,
+    addSimulatedPlayer,
+    controlPuzzle
   };
 }

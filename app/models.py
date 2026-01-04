@@ -1,10 +1,14 @@
 import uuid
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Optional, Dict, List
+from typing import Optional, Dict, List, Any
 
 from pydantic import BaseModel, Field, computed_field
 
+class GameStatus(str, Enum):
+    LOBBY = "LOBBY"
+    RUNNING = "RUNNING"
+    ENDED = "ENDED"
 
 class LogEntry(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -16,11 +20,12 @@ class LogEntry(BaseModel):
 
 
 class PuzzleStatus(str, Enum):
-    IN_PROGRESS = "IN_PROGRESS"
-    SOLVED = "SOLVED"
-    FAILED = "FAILED"
-    SABOTAGED = "SABOTAGED"
+    INACTIVE = "INACTIVE"
+    STARTING_GAME = "STARTING_GAME"
     IDLE = "IDLE"
+    ACTIVE = "ACTIVE"
+    SOLVED = "SOLVED"
+    SABOTAGED = "SABOTAGED"
 
 
 class Try(BaseModel):
@@ -28,7 +33,7 @@ class Try(BaseModel):
     player_uid: str
     started_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     ended_at: Optional[datetime] = None
-    outcome: PuzzleStatus = PuzzleStatus.IN_PROGRESS
+    outcome: PuzzleStatus = PuzzleStatus.ACTIVE
 
     @computed_field
     def duration_seconds(self) -> Optional[int]:
@@ -46,21 +51,16 @@ class Puzzle(BaseModel):
     display_name: str
     topic: str
     tries: List[Try] = Field(default_factory=list)
-
-    @computed_field
-    def status(self) -> PuzzleStatus:
-        if not self.tries:
-            return PuzzleStatus.IDLE
-        return self.tries[-1].outcome
-
+    status: PuzzleStatus = PuzzleStatus.INACTIVE
 
 class Player(BaseModel):
     uid: str
     impostor: bool = False
+    joined_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class GameConfig(BaseModel):
-    total_players: int
+    total_players: int = 0
     total_impostors: int
     difficulty: str = "NORMAL"
 
@@ -72,6 +72,7 @@ class Game(BaseModel):
     config: GameConfig
     puzzles: Dict[str, Puzzle] = {}
     players: List[Player] = []
+    status: GameStatus = GameStatus.LOBBY
 
     @computed_field
     def duration_seconds(self) -> int:
@@ -102,7 +103,6 @@ class Game(BaseModel):
                 "active": True,
                 "puzzles": {
                     "__all__": {
-                        "status": True,
                         "tries": {
                             "__all__": {
                                 "duration_seconds": True

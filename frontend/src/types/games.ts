@@ -1,6 +1,15 @@
-// src/types/game.ts
+// src/types/games.ts
+export type PuzzleStatus =
+  | "IN_PROGRESS"
+  | "SOLVED"
+  | "FAILED"
+  | "SABOTAGED"
+  | "IDLE"
+  | "STARTING_GAME"
+  | "ACTIVE"
+  | "INACTIVE";
 
-export type PuzzleStatus = "INACTIVE" | "STARTING_GAME" | "IDLE" | "ACTIVE" | "SOLVED" | "SABOTAGED";
+export type GameStatus = "LOBBY" | "RUNNING" | "ENDED";
 
 export interface Try {
   try_id: string;
@@ -27,14 +36,16 @@ export interface GameConfig {
 export interface Player {
   uid: string;
   impostor: boolean;
+  joined_at?: string;
 }
 
 export interface Game {
   game_id: string;
   start_time: string;
   end_time: string | null;
+  status: GameStatus;
   config: GameConfig;
-  puzzles: Record<string, Puzzle>; // Dict[str, Puzzle]
+  puzzles: Record<string, Puzzle>;
   players: Player[];
   duration_seconds: number;
 }

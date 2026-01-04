@@ -8,11 +8,3 @@ LOGS_TOPIC = "sala/logs"
 PUZZLES_TOPIC = "sala/puzzles"
 CMD_SUBTOPIC = "cmd"
 MQTT_TOPICS = [LOGS_TOPIC, f"{PUZZLES_TOPIC}/#"]
-
-class PuzzleStatus(Enum):
-    INACTIVE = "INACTIVE"
-    STARTING_GAME = "STARTING_GAME"
-    IDLE = "IDLE"
-    ACTIVE = "ACTIVE"
-    SOLVED = "SOLVED"
-    SABOTAGED = "SABOTAGED"

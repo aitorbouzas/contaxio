@@ -5,7 +5,7 @@ import { CreateGameForm } from "@/components/CreateGameForm";
 import { ActiveGame } from "@/components/ActiveGame";
 
 export default function Home() {
-  const { game, loading, isConnected, isActive, createGame, stopGame } = useGame();
+  const { game, loading, isConnected, createLobby, startGame, stopGame } = useGame();
 
   return (
     <main className="min-h-screen bg-gray-100 p-8">
@@ -26,21 +26,19 @@ export default function Home() {
           <div className="text-center py-20">Cargando sistema...</div>
         ) : (
           <>
-            {!isActive ? (
+            {/* Si NO hay juego O el juego está en LOBBY, mostramos el Formulario */}
+            {(!game || game.status === "LOBBY") ? (
               <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                {/* Si no hay juego activo (o terminó), mostramos formulario */}
-                {game && game.end_time && (
-                  <div className="mb-6 bg-yellow-50 border-l-4 border-yellow-400 p-4">
-                    <p className="font-bold text-yellow-700">Última partida finalizada</p>
-                    <p className="text-sm text-yellow-600">Duración: {game.duration_seconds} segundos</p>
-                  </div>
-                )}
-                <CreateGameForm onCreate={createGame} />
+                <CreateGameForm
+                  game={game}
+                  onCreateLobby={createLobby}
+                  onStartGame={startGame}
+                  onCancel={stopGame}
+                />
               </div>
             ) : (
               <div className="animate-in fade-in duration-500">
-                {/* Si hay juego, mostramos el tablero */}
-                {game && <ActiveGame game={game} onStop={stopGame} />}
+                <ActiveGame game={game} onStop={stopGame} />
               </div>
             )}
           </>
