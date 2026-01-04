@@ -22,8 +22,10 @@ services:
       - ./app:/app
     depends_on:
       - mqtt
+      - mongo
     environment:
       - MQTT_BROKER=mqtt
+      - MONGO_URL=mongodb://mongo:27017
 
   mongo:
     image: mongo:latest
@@ -40,3 +42,16 @@ services:
       - ME_CONFIG_MONGODB_SERVER=mongo
     depends_on:
       - mongo
+
+  frontend:
+    build: ./frontend
+    container_name: contaxio_frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - WATCHPACK_POLLING=true
+    depends_on:
+      - backend
