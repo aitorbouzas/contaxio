@@ -1,5 +1,6 @@
 import json
 from datetime import datetime
+from typing import Any
 
 from fastapi import APIRouter, HTTPException
 
@@ -79,6 +80,6 @@ async def get_current_game():
     game_data = await games_db.find_one({"end_time": None})
 
     if not game_data:
-        raise HTTPException(status_code=404, detail="No active game found.")
+        return None
 
     return Game(**game_data)

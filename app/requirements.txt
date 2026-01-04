@@ -4,3 +4,7 @@ jinja2
 websockets
 motor
 fastapi-mqtt
+pytest
+pytest-asyncio
+httpx
+mongomock-motor
