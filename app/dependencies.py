@@ -7,6 +7,7 @@ client = AsyncIOMotorClient(MONGO_URL)
 db = client.contaxio
 logs_db = db.logs
 games_db = db.games
+definitions_db = db.puzzle_definitions
 
 mqtt_config = MQTTConfig(
     host=MQTT_BROKER,

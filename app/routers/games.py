@@ -7,7 +7,7 @@ from typing import Optional
 from fastapi import APIRouter, HTTPException, Body
 
 from config import CMD_SUBTOPIC
-from dependencies import mqtt_app, games_db, ws_manager
+from dependencies import mqtt_app, games_db, ws_manager, definitions_db
 from models import Game, GameConfig, Puzzle, GameStatus, PuzzleStatus, Player
 from mqtt import MQTTHandler, broadcast_game_state
 
@@ -15,29 +15,25 @@ router = APIRouter(prefix="/games", tags=["Games"])
 
 @router.post("/lobby", response_model=Game)
 async def create_lobby():
-    """
-    PASO 1: Abre la sala de espera.
-    - Cierra juegos anteriores.
-    - Pone puzzles en modo 'STARTING_GAME' (para que lean RFID).
-    - Espera jugadores.
-    """
     await games_db.update_many(
         {"status": {"$ne": GameStatus.ENDED}},
         {"$set": {"end_time": datetime.now(timezone.utc), "status": GameStatus.ENDED}}
     )
 
-    puzzles = {
-        "cortocircuito": Puzzle(
-            display_name="Cortocircuito",
-            topic="sala/puzzles/cortocircuito",
+    puzzles_dict = {}
+    cursor = definitions_db.find({})
+
+    async for p_def in cursor:
+        puzzles_dict[p_def["key"]] = Puzzle(
+            display_name=p_def["display_name"],
+            topic=p_def["topic"],
             status=PuzzleStatus.STARTING_GAME,
-            connected=True
-        ),
-    }
+            connected=p_def["connected"]
+        )
 
     new_game = Game(
         config=GameConfig(total_players=0, total_impostors=0),
-        puzzles=puzzles,
+        puzzles=puzzles_dict,
         players=[],
         status=GameStatus.LOBBY
     )

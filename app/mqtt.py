@@ -1,7 +1,7 @@
 import json
 
 from config import MQTT_TOPICS, LOGS_TOPIC, CMD_SUBTOPIC
-from dependencies import mqtt_app, logs_db, ws_manager, games_db
+from dependencies import mqtt_app, logs_db, ws_manager, games_db, definitions_db
 from models import LogEntry, Game, Player
 
 
@@ -80,15 +80,25 @@ def register_mqtt_handlers():
         if topic.endswith("/connected"):
             puzzle_topic = topic.replace("/connected", "")
             is_connected = (message == "1")
-            active_game_data = await games_db.find_one({"status": {"$in": ["LOBBY", "RUNNING"]}})
+            await definitions_db.update_one(
+                {"topic": puzzle_topic},
+                {"$set": {"connected": is_connected}}
+            )
 
+            active_game_data = await games_db.find_one({"status": {"$in": ["LOBBY", "RUNNING"]}})
             if active_game_data:
                 game = Game(**active_game_data)
+                game_changed = False
+
                 for p in game.puzzles.values():
                     if p.topic == puzzle_topic:
-                        p.connected = is_connected
+                        if p.connected != is_connected:
+                            p.connected = is_connected
+                            game_changed = True
+
+                if game_changed:
                     await games_db.replace_one({"_id": active_game_data["_id"]}, game.to_mongo())
-                await broadcast_game_state(game)
+                    await broadcast_game_state(game)
 
 class MQTTHandler:
     @staticmethod
