@@ -1,4 +1,12 @@
 // src/types/games.ts
+export interface PuzzleDef {
+  key: string;
+  display_name: string;
+  topic: string;
+  connected: boolean;
+  description?: string;
+}
+
 export enum PuzzleStatus {
   INACTIVE = "INACTIVE",
   STARTING_GAME = "STARTING_GAME",

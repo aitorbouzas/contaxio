@@ -1,19 +1,31 @@
+from typing import List
 from fastapi import APIRouter
-
-from dependencies import games_db, definitions_db
+from dependencies import definitions_db, games_db
 from models import PuzzleDefinition
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
-@router.post("/admin/init-puzzles")
+
+@router.get("/puzzles", response_model=List[PuzzleDefinition])
+async def get_all_puzzles():
+    """Devuelve la lista de configuración de puzzles"""
+    cursor = definitions_db.find({})
+    puzzles = []
+    async for p in cursor:
+        puzzles.append(PuzzleDefinition(**p))
+    return puzzles
+
+
+@router.post("/init-puzzles")
 async def init_puzzles_db():
-    """Resetea la colección de definiciones de puzzles"""
+    """Resetea la colección de definiciones de puzzles (FACTORY RESET)"""
     puzzles_data = [
         PuzzleDefinition(
             key="cortocircuito",
             display_name="Cortocircuito",
             topic="sala/puzzles/cortocircuito",
-            connected=False  # Empieza desconectado por defecto
+            description="Puzzle de conectar cables y activar flujo.",
+            connected=False
         ),
     ]
 

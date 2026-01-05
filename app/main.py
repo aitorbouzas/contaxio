@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware  # <--- 1. IMPORTAR ESTO
 
 from dependencies import ws_manager, mqtt_app
 from mqtt import register_mqtt_handlers
-from routers import games
+from routers import games, admin
 
 templates = Jinja2Templates(directory="templates")
 app = FastAPI()
@@ -19,6 +19,7 @@ app.add_middleware(
 )
 
 app.include_router(games.router)
+app.include_router(admin.router)
 register_mqtt_handlers()
 mqtt_app.init_app(app)
 

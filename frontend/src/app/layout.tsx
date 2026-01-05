@@ -28,6 +28,12 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {children}
+
+        <footer className="fixed bottom-2 right-2 opacity-50 hover:opacity-100 transition-opacity">
+          <a href="/admin" className="text-[10px] text-gray-400 bg-gray-200 px-2 py-1 rounded hover:bg-gray-300">
+            Admin
+          </a>
+        </footer>
       </body>
     </html>
   );
