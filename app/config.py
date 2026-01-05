@@ -8,3 +8,4 @@ LOGS_TOPIC = "sala/logs"
 PUZZLES_TOPIC = "sala/puzzles"
 CMD_SUBTOPIC = "cmd"
 MQTT_TOPICS = [LOGS_TOPIC, f"{PUZZLES_TOPIC}/#"]
+PUZZLES = ["cortocircuito"]

@@ -5,7 +5,7 @@ import { CreateGameForm } from "@/components/CreateGameForm";
 import { ActiveGame } from "@/components/ActiveGame";
 
 export default function Home() {
-  const { game, loading, isConnected, createLobby, startGame, stopGame } = useGame();
+  const { game, loading, isConnected, createLobby, startGame, stopGame, addSimulatedPlayer, controlPuzzle } = useGame();
 
   return (
     <main className="min-h-screen bg-gray-100 p-8">
@@ -34,11 +34,12 @@ export default function Home() {
                   onCreateLobby={createLobby}
                   onStartGame={startGame}
                   onCancel={stopGame}
+                  onSimulatePlayer={addSimulatedPlayer}
                 />
               </div>
             ) : (
               <div className="animate-in fade-in duration-500">
-                <ActiveGame game={game} onStop={stopGame} />
+                <ActiveGame game={game} onStop={stopGame} onControlPuzzle={controlPuzzle}/>
               </div>
             )}
           </>

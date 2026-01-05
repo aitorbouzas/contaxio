@@ -1,17 +1,17 @@
 // src/components/ActiveGame.tsx
 import { Game } from "@/types/games";
 import { LiveTimer } from "@/components/LiveTimer";
-import {PuzzleCard} from "@/components/PuzzleCard";
+import { PuzzleCard } from "@/components/PuzzleCard";
 
 interface Props {
   game: Game;
   onStop: () => void;
+  onControlPuzzle: (key: string, action: string) => void;
 }
 
-export function ActiveGame({ game, onStop }: Props) {
+export function ActiveGame({ game, onStop, onControlPuzzle }: Props) {
   return (
     <div className="space-y-6">
-      {/* Header Principal */}
       <div className="flex flex-col md:flex-row justify-between items-center bg-white p-6 rounded-xl shadow-sm border border-gray-200">
         <div className="mb-4 md:mb-0">
           <div className="flex items-center space-x-3">
@@ -41,7 +41,12 @@ export function ActiveGame({ game, onStop }: Props) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {Object.entries(game.puzzles).map(([key, puzzle]) => (
-          <PuzzleCard key={key} puzzle={puzzle} />
+          <PuzzleCard
+            key={key}
+            puzzleKey={key}
+            puzzle={puzzle}
+            onControl={onControlPuzzle}
+          />
         ))}
       </div>
 

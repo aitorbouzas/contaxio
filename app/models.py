@@ -47,11 +47,20 @@ class Try(BaseModel):
         return int((end - start).total_seconds())
 
 
+class PuzzleDefinition(BaseModel):
+    key: str
+    display_name: str
+    topic: str
+    description: Optional[str] = ""
+    connected: bool = False
+
+
 class Puzzle(BaseModel):
     display_name: str
     topic: str
     tries: List[Try] = Field(default_factory=list)
     status: PuzzleStatus = PuzzleStatus.INACTIVE
+    connected: bool = False
 
 class Player(BaseModel):
     uid: str

@@ -31,6 +31,7 @@ async def create_lobby():
             display_name="Cortocircuito",
             topic="sala/puzzles/cortocircuito",
             status=PuzzleStatus.STARTING_GAME,
+            connected=True
         ),
     }
 
@@ -73,7 +74,7 @@ async def start_game(impostors_count: int = Body(..., embed=True)):
     game.start_time = datetime.now(timezone.utc)
 
     for p_key in game.puzzles:
-        game.puzzles[p_key].status = PuzzleStatus.ACTIVE
+        game.puzzles[p_key].status = PuzzleStatus.IDLE
 
     await games_db.replace_one({"_id": game_data["_id"]}, game.to_mongo())
 

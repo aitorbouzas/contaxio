@@ -77,6 +77,19 @@ def register_mqtt_handlers():
             else:
                 mqtt_app.client.publish(f"{puzzle_topic}/{CMD_SUBTOPIC}", "INACTIVE")
 
+        if topic.endswith("/connected"):
+            puzzle_topic = topic.replace("/connected", "")
+            is_connected = (message == "1")
+            active_game_data = await games_db.find_one({"status": {"$in": ["LOBBY", "RUNNING"]}})
+
+            if active_game_data:
+                game = Game(**active_game_data)
+                for p in game.puzzles.values():
+                    if p.topic == puzzle_topic:
+                        p.connected = is_connected
+                    await games_db.replace_one({"_id": active_game_data["_id"]}, game.to_mongo())
+                await broadcast_game_state(game)
+
 class MQTTHandler:
     @staticmethod
     def command_all_puzzles(game: Game, command: str):

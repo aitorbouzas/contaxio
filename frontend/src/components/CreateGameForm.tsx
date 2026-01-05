@@ -1,15 +1,16 @@
 // src/components/CreateGameForm.tsx
-import { useState, useEffect } from "react";
-import { Game } from "@/types/games";
+import {useState} from "react";
+import {Game} from "@/types/games";
 
 interface Props {
-  game: Game | null; // El juego actual (Lobby)
+  game: Game | null;
   onCreateLobby: () => void;
   onStartGame: (impostors: number) => void;
   onCancel: () => void;
+  onSimulatePlayer: () => void; // <--- Nueva prop
 }
 
-export function CreateGameForm({ game, onCreateLobby, onStartGame, onCancel }: Props) {
+export function CreateGameForm({game, onCreateLobby, onStartGame, onCancel, onSimulatePlayer}: Props) {
   const [impostors, setImpostors] = useState(1);
 
   if (!game) {
@@ -31,6 +32,13 @@ export function CreateGameForm({ game, onCreateLobby, onStartGame, onCancel }: P
         <div className="text-center mb-8">
           <h2 className="text-3xl font-extrabold text-gray-800 animate-pulse">ESPERANDO AGENTES...</h2>
           <p className="text-gray-500 mt-2">Escanead vuestras tarjetas RFID en los módulos.</p>
+
+          <button
+            onClick={onSimulatePlayer}
+            className="mt-4 text-xs bg-gray-200 hover:bg-gray-300 text-gray-600 px-3 py-1 rounded border border-gray-300"
+          >
+            [DEBUG] Simular Escaneo
+          </button>
         </div>
 
         <div className="mb-8">
@@ -44,7 +52,8 @@ export function CreateGameForm({ game, onCreateLobby, onStartGame, onCancel }: P
               <p className="col-span-2 text-center text-gray-400 italic py-10">Esperando escaneo...</p>
             ) : (
               game.players.map((p) => (
-                <div key={p.uid} className="flex items-center bg-white p-3 rounded shadow-sm border border-gray-100 animate-in fade-in slide-in-from-bottom-2">
+                <div key={p.uid}
+                     className="flex items-center bg-white p-3 rounded shadow-sm border border-gray-100 animate-in fade-in slide-in-from-bottom-2">
                   <div className="h-3 w-3 rounded-full bg-green-500 mr-3"></div>
                   <span className="font-mono text-gray-700">{p.uid}</span>
                 </div>
@@ -68,9 +77,6 @@ export function CreateGameForm({ game, onCreateLobby, onStartGame, onCancel }: P
             />
             <span className="text-3xl font-bold text-indigo-700 w-12 text-center">{impostors}</span>
           </div>
-          <p className="text-xs text-indigo-400 mt-2">
-            Max: {Math.max(1, game.players.length - 1)} (Se necesita al menos 1 tripulante)
-          </p>
         </div>
 
         <div className="flex space-x-4">
@@ -78,7 +84,7 @@ export function CreateGameForm({ game, onCreateLobby, onStartGame, onCancel }: P
             onClick={onCancel}
             className="flex-1 py-3 px-6 border border-red-300 text-red-600 rounded-lg font-bold hover:bg-red-50 transition-colors"
           >
-            CANCELAR OPERACIÓN
+            CANCELAR
           </button>
           <button
             onClick={() => onStartGame(impostors)}

@@ -1,15 +1,19 @@
 // src/types/games.ts
-export type PuzzleStatus =
-  | "IN_PROGRESS"
-  | "SOLVED"
-  | "FAILED"
-  | "SABOTAGED"
-  | "IDLE"
-  | "STARTING_GAME"
-  | "ACTIVE"
-  | "INACTIVE";
+export enum PuzzleStatus {
+  INACTIVE = "INACTIVE",
+  STARTING_GAME = "STARTING_GAME",
+  IDLE = "IDLE",
+  ACTIVE = "ACTIVE",
+  SOLVED = "SOLVED",
+  SABOTAGED = "SABOTAGED",
+  FAILED = "FAILED"
+}
 
-export type GameStatus = "LOBBY" | "RUNNING" | "ENDED";
+export enum GameStatus {
+  LOBBY = "LOBBY",
+  RUNNING = "RUNNING",
+  ENDED = "ENDED"
+}
 
 export interface Try {
   try_id: string;
@@ -25,6 +29,7 @@ export interface Puzzle {
   topic: string;
   tries: Try[];
   status: PuzzleStatus;
+  connected?: boolean; // Añadido el campo opcional
 }
 
 export interface GameConfig {
